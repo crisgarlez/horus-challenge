@@ -193,7 +193,7 @@ Response
 
 ## Project Explaniation
 
-Shape Entity Class:
+**Shape Entity Class:**
 
 ```php
 <?php
@@ -224,7 +224,7 @@ abstract class Shape
 - The `calculateSurfaceAndDiameter()` method calls the abstract methods `calculateSurface()` and `calculateDiameter()` to calculate the surface area and diameter of the shape, respectively.
 - The method returns an array containing the calculated surface area and diameter.
 
-Circle Entity Class:
+**Circle Entity Class:**
 
 ```php
 <?php
@@ -271,7 +271,7 @@ class Circle extends Shape
 - It also implements the `calculateDiameter()` method, which calculates the diameter of the circle by multiplying the radius by 2.
 - Additionally, the Circle class provides a `serialize()` method, which converts the Circle object into an array with serialized properties, including the type, radius, surface, and circumference.
 
-Triangle Entity Class:
+**Triangle Entity Class:**
 
 ```php
 <?php
@@ -333,7 +333,7 @@ class Triangle extends Shape
 - The template method calls these abstract methods, allowing each subclass to customize the behavior of those specific steps.
 - This approach promotes code reuse and provides a common structure for calculating the surface area and diameter of different shapes.
 
-GeometryCalculator.php Service Class
+**GeometryCalculator.php Service Class**
 
 ```php
 <?php
@@ -381,7 +381,7 @@ The `GeometryCalculator` class operates on the abstraction of the `Shape` class.
 
 By encapsulating the logic for calculating the sum of areas and sum of diameters in a separate service class, the `GeometryCalculator` promotes separation of concerns and keeps the code organized. It also allows for easy extension and flexibility if additional shape types or calculations need to be added in the future.
 
-CircleController.php Controller class
+**CircleController.php Controller class**
 
 ```php
 <?php
@@ -440,7 +440,7 @@ The `CircleController` class is a Symfony controller that handles HTTP requests 
 
 The `CircleController` class follows the Symfony controller convention, utilizing annotations for route mapping. It uses the `Circle` entity class to create circle objects and the `GeometryCalculator` service to perform calculations on those objects.
 
-TriangleController.php Controller class
+**TriangleController.php Controller class**
 
 ```php
 <?php
