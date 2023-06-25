@@ -1,0 +1,375 @@
+{
+	"info": {
+		"_postman_id": "8821607c-dc1e-44b9-8ecf-c4470f6d23d3",
+		"name": "HorusChallenge",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21521629",
+		"_collection_link": "https://abianic.postman.co/workspace/Abianic~acd0db85-3af8-4dd5-8628-a72914a4f232/collection/21521629-8821607c-dc1e-44b9-8ecf-c4470f6d23d3?action=share&creator=21521629&source=collection_link"
+	},
+	"item": [
+		{
+			"name": "circle",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/circle/2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"circle",
+						"2"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "circle example",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/circle/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"circle",
+								"2"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Server",
+							"value": "nginx/1.25.1"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "X-Powered-By",
+							"value": "PHP/8.1.20"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "Date",
+							"value": "Sun, 25 Jun 2023 19:26:38 GMT"
+						},
+						{
+							"key": "X-Robots-Tag",
+							"value": "noindex"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"surface\": \"12.57\",\n    \"circumference\": \"12.57\",\n    \"type\": \"circle\",\n    \"radius\": \"2.0\"\n}"
+				}
+			]
+		},
+		{
+			"name": "triangle",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/triangle/3/4/5",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"triangle",
+						"3",
+						"4",
+						"5"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "triangle example",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost/triangle/3/4/5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"triangle",
+								"3",
+								"4",
+								"5"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Server",
+							"value": "nginx/1.25.1"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "X-Powered-By",
+							"value": "PHP/8.1.20"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "Date",
+							"value": "Sun, 25 Jun 2023 19:27:59 GMT"
+						},
+						{
+							"key": "X-Robots-Tag",
+							"value": "noindex"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"surface\": \"6.0\",\n    \"circumference\": \"12.0\",\n    \"type\": \"triangle\",\n    \"a\": \"3.0\",\n    \"b\": \"4.0\",\n    \"c\": \"5.0\"\n}"
+				}
+			]
+		},
+		{
+			"name": "circle-sum",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"circle1\": {\r\n        \"radius\": 2\r\n    },\r\n    \"circle2\": {\r\n        \"radius\": 2\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/circle/sum-objects",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"circle",
+						"sum-objects"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "circle-sum example",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"circle1\": {\r\n        \"radius\": 2\r\n    },\r\n    \"circle2\": {\r\n        \"radius\": 2\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/circle/sum-objects",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"circle",
+								"sum-objects"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Server",
+							"value": "nginx/1.25.1"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "X-Powered-By",
+							"value": "PHP/8.1.20"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "Date",
+							"value": "Sun, 25 Jun 2023 19:32:00 GMT"
+						},
+						{
+							"key": "X-Robots-Tag",
+							"value": "noindex"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"totalAreas\": 25.14,\n    \"totalDiameters\": 8\n}"
+				}
+			]
+		},
+		{
+			"name": "triangle-sum",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"triangle1\": {\r\n        \"a\": 3,\r\n        \"b\": 4,\r\n        \"c\": 5\r\n    },\r\n    \"triangle2\": {\r\n        \"a\": 3,\r\n        \"b\": 4,\r\n        \"c\": 5\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/triangle/sum-objects",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"triangle",
+						"sum-objects"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "triangle-sum example",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"triangle1\": {\r\n        \"a\": 3,\r\n        \"b\": 4,\r\n        \"c\": 5\r\n    },\r\n    \"triangle2\": {\r\n        \"a\": 3,\r\n        \"b\": 4,\r\n        \"c\": 5\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost/triangle/sum-objects",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"path": [
+								"triangle",
+								"sum-objects"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Server",
+							"value": "nginx/1.25.1"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Transfer-Encoding",
+							"value": "chunked"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "X-Powered-By",
+							"value": "PHP/8.1.20"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "Date",
+							"value": "Sun, 25 Jun 2023 19:28:32 GMT"
+						},
+						{
+							"key": "X-Robots-Tag",
+							"value": "noindex"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"totalAreas\": 12,\n    \"totalDiameters\": 24\n}"
+				}
+			]
+		}
+	]
+}
