@@ -11,6 +11,8 @@ services:
     environment:
       SERVICE_NAME: api
       SERVICE_TAGS: dev
+      APP_SECRET: c59387f2053b64e77fce3d67c3e2f399
+      DATABASE_URL: "mysql://root:horus@db:3306/horus?serverVersion=8&charset=utf8mb4&allowPublicKeyRetrieval=true&useSSL=false"
     working_dir: /var/www
     volumes:
       - ./:/var/www
@@ -29,6 +31,25 @@ services:
     volumes:
       - ./:/var/www
       - ./nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - horusnet
+
+  db:
+    image: mysql:8.0.29
+    container_name: db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: horus
+      MYSQL_ROOT_PASSWORD: horus
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - dbdata:/var/lib/mysql/
+      - ./mysql/my.cnf:/etc/my.cnf
+      - ./mysql/dump:/docker-entrypoint-initdb.d
     networks:
       - horusnet
 

@@ -1,5 +1,7 @@
 # Cristhian García Challenge for Horus
 
+This project contemplates the creation of an API to handle geometric figures such as the Circle and the Triangle, and the sum of Diameters and areas also saves a history in the Database of each query made to the methods /circle/sum-objects and /triangle/sum-objects, is deployed using Docker, Nginx, MySQL, PHP. Implement unit tests and use design patterns such as: Template Method and Adapter explained later
+
 ## Deploy
 
 ### Cloning the Repository
@@ -189,6 +191,25 @@ Response
     "totalAreas": 12,
     "totalDiameters": 24
 }
+```
+
+##### history Endpoint
+
+```console
+GET /history
+HTTP/1.1
+Host: localhost
+
+Response
+
+[
+    {
+        "id": 1,
+        "request": "{\r\n    \"circle1\": {\r\n        \"radius\": 2\r\n    },\r\n    \"circle2\": {\r\n        \"radius\": 2\r\n    }\r\n}",
+        "response": "{\"totalAreas\":25.14,\"totalDiameters\":8}",
+        "createdAt": "2023-06-26 17:40:34"
+    }
+]
 ```
 
 ## Project Explaniation
@@ -504,6 +525,324 @@ The `TriangleController` class is another Symfony controller that handles HTTP r
 
 The `TriangleController` class follows the Symfony controller convention and utilizes annotations for route mapping. It uses the `Triangle` entity class to create triangle objects and the `GeometryCalculator` service to perform calculations on those objects.
 
+**History.php Entity class**
+
+```php
+<?php
+
+namespace App\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\SerializedName;
+use App\Repository\HistoryRepository;
+
+#[ORM\Entity(repositoryClass: HistoryRepository::class)]
+class History
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private int $id;
+
+    #[ORM\Column(type: 'json')]
+    private string $request;
+
+    #[ORM\Column(type: 'json')]
+    private string $response;
+
+    #[ORM\Column(type: 'datetime')]
+    #[SerializedName('createdAt')]
+    private \DateTimeInterface $createdAt;
+
+    public function __construct(string $request, string $response)
+    {
+        $this->request = $request;
+        $this->response = $response;
+        $this->createdAt = new \DateTimeImmutable();
+    }
+
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function getRequest(): string
+    {
+        return $this->request;
+    }
+
+    public function getResponse(): string
+    {
+        return $this->response;
+    }
+
+    public function getCreatedAt(): \DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+}
+```
+
+The `History` class represents a historical record of a request and its corresponding response in the application.
+
+The class has the following properties:
+
+- `id`: An integer property representing the unique identifier of the history record.
+- `request`: A string property that stores the JSON-encoded request data.
+- `response`: A string property that stores the JSON-encoded response data.
+- `createdAt`: A `\DateTimeInterface` property that stores the timestamp of when the history record was created.
+
+The class is annotated with `@ORM\Entity` to indicate that it is an entity managed by Doctrine ORM. The associated repository class is specified as `HistoryRepository`.
+
+The `id` property is marked with `@ORM\Id` to indicate that it is the primary key. It is also annotated with `@ORM\GeneratedValue` to specify that the value is auto-generated. The column type is defined as `integer`.
+
+The `request` and `response` properties are annotated with `@ORM\Column` to define their column types as `json`.
+
+The `createdAt` property is annotated with `@ORM\Column` to define its column type as `datetime`. Additionally, the `@SerializedName` annotation is used to specify the serialized name as `createdAt` during serialization/deserialization.
+
+The class has a constructor that accepts the request and response as arguments. It initializes the properties with the provided values and sets the `createdAt` property to the current timestamp using `\DateTimeImmutable()`.
+
+Getter methods are provided for accessing the private properties: `getId()`, `getRequest()`, `getResponse()`, and `getCreatedAt()`.
+
+**HistoryRepositoryInterface.php Interface**
+
+```php
+<?php
+
+namespace App\Repository;
+
+use App\Entity\History;
+
+interface HistoryRepositoryInterface
+{
+    public function save(History $history): void;
+    public function findAll(): array;
+}
+```
+
+The `HistoryRepositoryInterface` is an interface that defines the contract for a repository responsible for storing and retrieving `History` entities.
+
+The interface declares two methods:
+
+1. `save(History $history): void`: This method is responsible for saving a `History` entity to the repository. It takes a `History` object as a parameter and does not return any value. It is used to persist a history record in the underlying storage.
+
+2. `findAll(): array`: This method is used to retrieve all `History` entities from the repository. It returns an array containing all the history records stored in the repository.
+
+By defining this interface, it allows for abstraction and loose coupling between the application's code and the actual implementation of the repository. Different implementations of the `HistoryRepositoryInterface` can be created to work with different storage systems (e.g., MySQL, MongoDB) while adhering to the same contract.
+
+**HistoryRepository.php Repository class**
+
+```php
+<?php
+
+namespace App\Repository;
+
+use App\Entity\History;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
+
+class HistoryRepository extends ServiceEntityRepository
+{
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, History::class);
+    }
+
+    public function save(History $history): void
+    {
+        $entityManager = $this->getEntityManager();
+        $entityManager->persist($history);
+        $entityManager->flush();
+    }
+
+    public function findAll(): array
+    {
+        return $this->createQueryBuilder('h')
+            ->getQuery()
+            ->getResult();
+    }
+}
+```
+
+The `HistoryRepository` class is a repository implementation that extends the `ServiceEntityRepository` class provided by Doctrine. It is responsible for handling database operations related to the `History` entity.
+
+Let's break down the code:
+
+1. The class extends the `ServiceEntityRepository` class and specifies the entity class it will be working with (`History::class`) in the constructor using the `parent::__construct()` method.
+
+2. The constructor takes a `ManagerRegistry` object as a parameter, which is used to obtain the entity manager and registry from Doctrine.
+
+3. The `save()` method is responsible for persisting a `History` entity to the database. It gets the entity manager using `$this->getEntityManager()` and then uses the `persist()` and `flush()` methods to save the entity.
+
+4. The `findAll()` method retrieves all `History` entities from the database. It uses the `createQueryBuilder()` method to create a query builder instance, specifying 'h' as the alias for the `History` entity. Then, it calls `getQuery()` to obtain the Doctrine query object, and finally, `getResult()` to execute the query and fetch the results as an array.
+
+By extending the `ServiceEntityRepository` class, the `HistoryRepository` class inherits convenient methods provided by Doctrine for querying and manipulating entities. The `save()` method allows us to persist `History` entities, and the `findAll()` method provides a way to retrieve all `History` entities from the database.
+
+**MySqlAdapter.php Adapter class**
+
+```php
+<?php
+
+namespace App\Adapter;
+
+use App\Entity\History;
+use App\Repository\HistoryRepositoryInterface;
+use App\Repository\HistoryRepository;
+use Doctrine\Persistence\ManagerRegistry;
+
+class MySqlAdapter implements HistoryRepositoryInterface
+{
+    private HistoryRepository $historyRepository;
+
+    public function __construct(ManagerRegistry $registry)
+    {
+        $this->historyRepository = $registry->getRepository(History::class);
+    }
+
+    public function save(History $history): void
+    {
+        $this->historyRepository->save($history);
+    }
+
+    public function findAll(): array
+    {
+        return $this->historyRepository->findAll();
+    }
+}
+```
+
+The `MySqlAdapter` class is an implementation of the `HistoryRepositoryInterface` that adapts the `HistoryRepository` class to work with a MySQL database using Doctrine.
+
+Let's go through the code:
+
+1. The class implements the `HistoryRepositoryInterface` and provides the required methods: `save()` and `findAll()`.
+
+2. The class has a dependency on the `HistoryRepository`, which is injected via the constructor. This repository is responsible for handling the database operations.
+
+3. In the constructor, an instance of `HistoryRepository` is obtained from the `ManagerRegistry` using the `getRepository()` method. This allows us to access the `HistoryRepository` methods for interacting with the MySQL database.
+
+4. The `save()` method delegates the responsibility of saving a `History` entity to the `historyRepository` object. It simply calls the `save()` method of the `HistoryRepository` class, passing the `History` object as a parameter.
+
+5. The `findAll()` method delegates the responsibility of retrieving all `History` entities from the database to the `historyRepository` object. It calls the `findAll()` method of the `HistoryRepository` class and returns the result.
+
+By using the `MySqlAdapter` class, we can interact with the `HistoryRepository` and perform database operations specific to a MySQL database. This adapter allows us to decouple the application code from the underlying persistence mechanism and provides a unified interface through the `HistoryRepositoryInterface`.
+
+**HistoryService.php Service class**
+
+```php
+<?php
+
+namespace App\Service;
+
+use App\Entity\History;
+use App\Repository\HistoryRepositoryInterface;
+
+class HistoryService
+{
+    private HistoryRepositoryInterface $historyRepository;
+
+    public function __construct(HistoryRepositoryInterface $historyRepository)
+    {
+        $this->historyRepository = $historyRepository;
+    }
+
+    public function saveHistory(string $request, string $response): void
+    {
+        $history = new History($request, $response);
+        $this->historyRepository->save($history);
+    }
+
+    public function getAllHistory(): array
+    {
+        return $this->historyRepository->findAll();
+    }
+}
+```
+
+The `HistoryService` class is a service class that provides methods for saving and retrieving `History` records using a `HistoryRepositoryInterface`.
+
+Let's go through the code:
+
+1. The class defines a private property `$historyRepository` of type `HistoryRepositoryInterface`, which will be used to interact with the persistence layer.
+
+2. The constructor takes a `HistoryRepositoryInterface` object as a parameter and assigns it to the `$historyRepository` property.
+
+3. The `saveHistory()` method is responsible for creating a new `History` entity using the provided `$request` and `$response` parameters. It then calls the `save()` method on the `$historyRepository` to persist the `History` entity in the underlying data storage.
+
+4. The `getAllHistory()` method retrieves all `History` records from the underlying data storage by calling the `findAll()` method on the `$historyRepository`. It returns an array containing all the retrieved `History` records.
+
+By encapsulating the logic for saving and retrieving `History` records within the `HistoryService` class, it provides a clear and reusable interface for interacting with the `History` functionality. It abstracts away the underlying persistence implementation through the use of the `HistoryRepositoryInterface`, allowing for flexibility and easier testing and maintenance.
+
+**Adapter pattern**
+
+The Adapter pattern is utilized to adapt the `HistoryRepositoryInterface` to work with different data storage implementations, such as MySQL or MongoDB. Here's how it is applied:
+
+1. **HistoryRepositoryInterface**: This interface defines the contract for interacting with `History` records, providing methods like `save()` and `findAll()`. It serves as the target interface for the Adapter pattern.
+
+2. **HistoryRepository**: This class implements the `HistoryRepositoryInterface` and provides the core logic for interacting with the underlying data storage. In this case, it includes methods like `save()` and `findAll()` that work with Doctrine and MySQL.
+
+3. **MySqlAdapter**: This class acts as an adapter that implements the `HistoryRepositoryInterface` and adapts it to work specifically with MySQL. It wraps the `HistoryRepository` and delegates the method calls to the corresponding methods in the repository. The `MySqlAdapter` essentially bridges the gap between the target interface (`HistoryRepositoryInterface`) and the specific MySQL implementation (`HistoryRepository`).
+
+4. **HistoryService**: This class is a service that depends on the `HistoryRepositoryInterface`. It is decoupled from the specific implementation details of the repository. Instead, it relies on the abstract interface to perform operations on `History` records. The `HistoryService` doesn't need to know about the underlying data storage, whether it's MySQL or any other adapter implementation.
+
+By using the Adapter pattern in this context, you can easily switch between different data storage implementations by providing the corresponding adapter. For example, if you want to switch from MySQL to MongoDB, you can create a `MongoDbAdapter` that implements the `HistoryRepositoryInterface` and adapts it to work with MongoDB. The `HistoryService` can then use the `MongoDbAdapter` without any changes.
+
+**HistoryController.php Controller class**
+
+```php
+<?php
+
+namespace App\Controller;
+
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
+
+use App\Service\HistoryService;
+
+class HistoryController extends AbstractController
+{
+    private $historyService;
+
+    public function __construct(HistoryService $historyService)
+    {
+        $this->historyService = $historyService;
+    }
+
+    #[Route('/history', methods: ["GET"], name: 'app_history')]
+    public function index(): JsonResponse
+    {
+        $history = $this->historyService->getAllHistory();
+
+        $response = [];
+        foreach ($history as $record) {
+            $response[] = [
+                'id' => $record->getId(),
+                'request' => $record->getRequest(),
+                'response' => $record->getResponse(),
+                'createdAt' => $record->getCreatedAt()->format('Y-m-d H:i:s')
+            ];
+        }
+
+        return $this->json($response);
+    }
+}
+```
+
+The `HistoryController` class is responsible for handling HTTP requests related to the history records. It depends on the `HistoryService` to retrieve the history records and format them for the response.
+
+- **Inheritance**: The class extends the `AbstractController` class provided by Symfony, which provides convenient methods for working with controllers.
+
+- **Constructor**: The class defines a constructor that injects an instance of the `HistoryService` into the controller. This is done via dependency injection, allowing the controller to utilize the functionality of the `HistoryService`.
+
+- **Route Annotation**: The controller method is annotated with `#[Route]` to define the route at which the method will be accessible. In this case, the endpoint is `/history`, and it only accepts GET requests. The name of the route is set to `'app_history'`.
+
+- **index() Method**: This method is invoked when a GET request is made to the `/history` endpoint. It retrieves all the history records using the `HistoryService` by calling the `getAllHistory()` method.
+
+- **Formatting the Response**: The retrieved history records are then transformed into a format suitable for the response. Each record is looped over, and the relevant information such as ID, request, response, and createdAt are extracted and added to an array.
+
+- **Returning the Response**: The final response is generated by calling `$this->json($response)`, which converts the formatted array into a JSON response and returns it to the client.
+
 ## Tests
 
 The tests are organized into separate test files, each containing test cases for specific classes or features. These test files follow the naming convention of <ClassName>Test.php to indicate the class being tested.
@@ -519,3 +858,202 @@ To run all the tests, open a terminal, navigate to the root directory of your pr
 `php bin/phpunit --testdox`
 
 ![Test execution](./docs/test_execution.PNG)
+
+## Docker
+
+**Dockerfile**
+
+```console
+FROM php:8.1-fpm
+
+# Copy composer.lock and composer.json
+COPY composer.lock composer.json /var/www/
+
+# Set working directory
+WORKDIR /var/www
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    libwebp-dev \
+    locales \
+    zip \
+    jpegoptim optipng pngquant gifsicle \
+    vim \
+    unzip \
+    git \
+    curl \
+    libzip-dev \
+    libonig-dev
+
+# Clear cache
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install extensions
+RUN docker-php-ext-install pdo_mysql mbstring zip exif pcntl
+RUN docker-php-ext-configure gd --with-jpeg=/usr/include/ --with-freetype=/usr/include/
+RUN docker-php-ext-install gd
+
+# Install composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Add user for application
+RUN groupadd -g 1000 www
+RUN useradd -u 1000 -ms /bin/bash -g www www
+
+# Copy existing application directory contents
+COPY . /var/www
+
+# Copy existing application directory permissions
+COPY --chown=www:www . /var/www
+
+# Change current user to www
+USER www
+
+# Expose port 9000 and start php-fpm server
+EXPOSE 9000
+CMD ["php-fpm"]
+```
+
+**docker-compose.yml file**
+
+```console
+version: "3"
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: digitalocean.com/php
+    container_name: api
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: api
+      SERVICE_TAGS: dev
+      APP_SECRET: c59387f2053b64e77fce3d67c3e2f399
+      DATABASE_URL: "mysql://root:horus@db:3306/horus?serverVersion=8&charset=utf8mb4&allowPublicKeyRetrieval=true&useSSL=false"
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - horusnet
+
+  server:
+    image: nginx:alpine
+    container_name: server
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./:/var/www
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - horusnet
+
+  db:
+    image: mysql:8.0.29
+    container_name: db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: horus
+      MYSQL_ROOT_PASSWORD: horus
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - dbdata:/var/lib/mysql/
+      - ./mysql/my.cnf:/etc/my.cnf
+      - ./mysql/dump:/docker-entrypoint-initdb.d
+    networks:
+      - horusnet
+
+networks:
+  horusnet:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local
+
+```
+
+The `docker-compose.yml` file is used to define and configure multiple services that make up an application and their dependencies. Let's go through the different sections and their explanations:
+
+- **Services**: Defines the services that will be created and run.
+
+  - **api**: Specifies the configuration for the `api` service.
+
+    - **Build**: Configures the build context and Dockerfile for building the image. The `context` is set to the current directory (`.`) and the `dockerfile` is set to `Dockerfile`.
+
+    - **Image**: Specifies the image to use for the service. In this case, it is `digitalocean.com/php`.
+
+    - **Container_name**: Sets the name of the container to `api`.
+
+    - **Restart**: Specifies the restart policy for the container. It is set to `unless-stopped`, which means the container will be restarted unless explicitly stopped.
+
+    - **Tty**: Allocates a pseudo-TTY for the container.
+
+    - **Environment**: Defines environment variables for the container. Here, several environment variables like `SERVICE_NAME`, `SERVICE_TAGS`, `APP_SECRET`, and `DATABASE_URL` are set.
+
+    - **Working_dir**: Sets the working directory inside the container to `/var/www`.
+
+    - **Volumes**: Maps local directories to container directories. The first volume mapping (`./:/var/www`) maps the current directory to `/var/www` inside the container. The second volume mapping (`./php/local.ini:/usr/local/etc/php/conf.d/local.ini`) maps a local PHP configuration file to the corresponding container location.
+
+    - **Networks**: Specifies the networks to which the container is attached. Here, it is attached to the `horusnet` network.
+
+  - **server**: Specifies the configuration for the `server` service.
+
+    - **Image**: Specifies the image to use for the service. In this case, it is `nginx:alpine`.
+
+    - **Container_name**: Sets the name of the container to `server`.
+
+    - **Restart**: Specifies the restart policy for the container. It is set to `unless-stopped`.
+
+    - **Tty**: Allocates a pseudo-TTY for the container.
+
+    - **Ports**: Maps container ports to host ports. Here, port 80 and 443 of the host are mapped to the corresponding container ports.
+
+    - **Volumes**: Maps local directories to container directories. The first volume mapping (`./:/var/www`) maps the current directory to `/var/www` inside the container. The second volume mapping (`./nginx/conf.d/:/etc/nginx/conf.d/`) maps a local Nginx configuration directory to the corresponding container location.
+
+    - **Networks**: Specifies the networks to which the container is attached. Here, it is attached to the `horusnet` network.
+
+  - **db**: Specifies the configuration for the `db` service.
+
+    - **Image**: Specifies the image to use for the service. In this case, it is `mysql:8.0.29`.
+
+    - **Container_name**: Sets the name of the container to `db`.
+
+    - **Restart**: Specifies the restart policy for the container. It is set to `unless-stopped`.
+
+    - **Tty**: Allocates a pseudo-TTY for the container.
+
+    - **Ports**: Maps container ports to host ports. Here, port 3306 of the host is mapped to the corresponding container port.
+
+    - **Environment**: Defines environment variables for the container. Variables like `MYSQL_DATABASE`, `MYSQL_ROOT_PASSWORD`, `SERVICE_TAGS`, and `SERVICE_NAME` are set.
+
+    - \*\*
+
+Volumes\*\*: Maps local directories to container directories. The first volume mapping (`dbdata:/var/lib/mysql/`) maps a named volume `dbdata` to the MySQL data directory. The second volume mapping (`./mysql/my.cnf:/etc/my.cnf`) maps a local MySQL configuration file to the corresponding container location. The third volume mapping (`./mysql/dump:/docker-entrypoint-initdb.d`) maps a local directory containing SQL dump files to the container's initialization directory.
+
+    - **Networks**: Specifies the networks to which the container is attached. Here, it is attached to the `horusnet` network.
+
+- **Networks**: Defines the networks that will be created.
+
+  - **horusnet**: Specifies the configuration for the `horusnet` network.
+
+    - **Driver**: Sets the network driver to `bridge`, which is the default network driver.
+
+- **Volumes**: Defines named volumes that can be used by the services.
+
+  - **dbdata**: Specifies the configuration for the `dbdata` volume. The `driver` is set to `local`, indicating that the volume is managed locally.
+
+This `docker-compose.yml` file allows you to define and manage multiple services (API, server, and database) for your application, configure their dependencies, and map local directories and ports to the corresponding container locations. It provides a convenient way to start and manage all the required containers as a single unit.

@@ -1,0 +1,7 @@
+doctrine:
+  # ...
+  dbal:
+    host: localhost
+    dbname: horus
+    user: root
+    password: horus

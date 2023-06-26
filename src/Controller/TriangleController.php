@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 use App\Service\GeometryCalculator;
 use App\Entity\Triangle;
+use App\Service\HistoryService;
 
 class TriangleController extends AbstractController
 {
@@ -20,7 +21,11 @@ class TriangleController extends AbstractController
     }
 
     #[Route('/triangle/sum-objects', methods: ["POST"], name: 'app_triangle_sum_object')]
-    public function sumObjects(Request $request, GeometryCalculator $geometryCalculator): JsonResponse
+    public function sumObjects(
+        Request $request,
+        GeometryCalculator $geometryCalculator,
+        HistoryService $historyService
+    ): JsonResponse
     {
         $payload = json_decode($request->getContent(), TRUE);
 
@@ -30,10 +35,16 @@ class TriangleController extends AbstractController
         $triangle2 = $payload['triangle2'];
         $triangle2 = new Triangle($triangle2['a'], $triangle2['b'], $triangle2['c']);
 
-        return $this->json([
+        $responseBody = [
             'totalAreas' => $geometryCalculator->sumAreas($triangle1, $triangle2),
             'totalDiameters' => $geometryCalculator->sumDiameters($triangle1, $triangle2)
-        ]);
+        ];
+
+        $jsonResponse = json_encode($responseBody);
+        $jsonRequest = json_encode([$payload['triangle1'], $payload['triangle2']]);
+        $historyService->saveHistory($request->getContent(), $jsonResponse);
+
+        return $this->json($responseBody);
     }
 }
 

@@ -370,6 +370,24 @@
 					"body": "{\n    \"totalAreas\": 12,\n    \"totalDiameters\": 24\n}"
 				}
 			]
+		},
+		{
+			"name": "history",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost/history",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"history"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }
